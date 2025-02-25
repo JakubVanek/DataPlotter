@@ -3,4 +3,6 @@ build/*
 CMakeCache.txt
 CMakeFiles/**
 deploy_linux/*.deb
+deploy_linux/*.AppImage
+deploy_linux/deploy
 deploy_windows/deploy/**

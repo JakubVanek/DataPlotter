@@ -1,0 +1,61 @@
+name: Build and Deploy DataPlotter on Linux
+
+on:
+  push:
+    branches:
+      - appimage  # Run on every push to main (modify as needed)
+  pull_request:
+    branches:
+      - appimage  # Run on PRs to main
+  workflow_dispatch: # Manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04  # Match your Codespace environment
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update && sudo apt install -y --no-install-recommends \
+            qtbase5-dev \
+            qtchooser \
+            qtdeclarative5-dev \
+            libqt5quick5 \
+            libqt5quickcontrols2-5 \
+            libqt5serialport5-dev \
+            mesa-common-dev \
+            libglu1-mesa-dev \
+            qtquickcontrols2-5-dev \
+            libqt5opengl5-dev \
+            qt5dxcb-plugin \
+            libxcb-util-dev \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            qttools5-dev \
+            qttools5-dev-tools \
+            gnupg2 \
+            fuse libfuse2 \
+            zsync
+
+      - name: Build DataPlotter
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+          ninja
+
+      - name: Create AppImage Package
+        run: |
+          python3 ./deploy_linux/deploy_appimage.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload AppImage Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: DataPlotter-AppImage-Package
+          path: ./deploy_linux/*.AppImage
